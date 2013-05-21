@@ -5,3 +5,9 @@ Getting Started guide at
 http://www.gluster.org/community/documentation/index.php/Getting_started_overview
 
 Used a CentOS 6.4 AMI (ami-52009e3b) on Amazon EC2.
+
+- main.yml: Ansible playbook to build the GlusterFS filesystem.
+- vars.yml: Variables for configuring the filesystem.
+- glusterfs.repo: yum repo for glusterfs.
+- create_vol.sh.j2: Script for doing disk partitioning.
+
