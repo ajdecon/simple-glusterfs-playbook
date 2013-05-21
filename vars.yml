@@ -1,0 +1,5 @@
+headnode: ip-10-28-23-8.ec2.internal 
+slavenode: ip-10-28-241-231.ec2.internal
+disk_name: "/dev/xvdg"
+fs_mountpoint: "/mnt/glusterfs"
+disk_mountpoint: "/export/disk"

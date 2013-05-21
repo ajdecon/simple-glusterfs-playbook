@@ -1,0 +1,72 @@
+---
+- hosts: all
+  user: ec2-user
+  sudo: yes
+  tasks:
+  - name: get epel repo
+    action: get_url url="http://fedora-epel.mirror.lstn.net/6/i386/epel-release-6-8.noarch.rpm" dest=/tmp/epel.rpm
+  - name: install epel
+    action: yum name=/tmp/epel.rpm state=present
+  - name: install xfsprogs
+    action: yum name=xfsprogs state=present
+  - name: install gluster repo
+    action: copy src=glusterfs.repo dest=/etc/yum.repos.d
+  - name: install gluster packages
+    action: yum name=$item state=present
+    with_items:
+    - glusterfs
+    - glusterfs-fuse
+    - glusterfs-geo-replication
+    - glusterfs-server
+  - name: start glusterd service
+    action: service name=glusterd state=started enabled=yes
+
+- hosts: headnode
+  user: ec2-user
+  sudo: yes
+  vars_files: 
+  - vars.yml
+  tasks: 
+  - name: ensure glusterfs peering
+    action: command gluster peer probe $slavenode
+
+- hosts: all
+  user: ec2-user
+  sudo: yes
+  vars_files: 
+  - vars.yml
+  tasks:
+  - name: copy script for volume creation
+    action: template src=create_vol.sh.j2 dest=/tmp/create_vol.sh mode=0600
+  - name: run script for volume creation 
+    action: command bash /tmp/create_vol.sh
+  - name: ensure mountpoint exists
+    action: file path=${disk_mountpoint} state=directory
+  - name: ensure volume is mounted
+    action: mount name=${disk_mountpoint} src=${disk_name}1 fstype=xfs state=mounted
+  - name: ensure brick exists
+    action: file path=${disk_mountpoint}/brick state=directory
+
+- hosts: headnode
+  user: ec2-user
+  sudo: yes
+  vars_files: 
+  - vars.yml
+  tasks:
+  - name: create gluster volume
+    action: "command gluster volume create ${vol_name} replica 2 ${headnode}:${disk_mountpoint}/brick ${slavenode}:${disk_mountpoint}/brick"
+    ignore_errors: yes
+  - name: start gluster volume
+    action: "command gluster volume start ${vol_name}"
+    ignore_errors: yes
+
+- hosts: all
+  user: ec2-user
+  sudo: yes
+  vars_files:
+  - vars.yml
+  tasks:
+  - name: ensure mount point exists
+    action: file path=${fs_mountpoint} state=directory
+  - name: mount gluster volume
+    action: "mount name=${fs_mountpoint} src=$headnode:/${vol_name} fstype=glusterfs state=mounted"

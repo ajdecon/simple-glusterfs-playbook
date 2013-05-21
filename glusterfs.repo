@@ -1,0 +1,4 @@
+[glusterfs]
+name=GlusterFS Repo
+baseurl=http://download.gluster.org/pub/gluster/glusterfs/LATEST/RHEL/epel-6Server/x86_64/
+gpgcheck=0

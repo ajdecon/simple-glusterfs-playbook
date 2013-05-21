@@ -1,0 +1,7 @@
+Just playing around. :)
+
+A simple Ansible playbook for a 2-node GlusterFS filesystem, based on the
+Getting Started guide at 
+http://www.gluster.org/community/documentation/index.php/Getting_started_overview
+
+Used a CentOS 6.4 AMI (ami-52009e3b) on Amazon EC2.
